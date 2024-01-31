@@ -1,0 +1,210 @@
+
+-- The main run loop for the whole game. 
+--   Uses Defold state calls so the script<->states are almost 1:1
+------------------------------------------------------------------------------------------------------------
+
+release       = "0"
+subversion    = "001"
+
+go.property("debugClient", 0)
+
+------------------------------------------------------------------------------------------------------------
+-- Global because states need to use it themselves
+
+local utils = 	require "app.utils"
+
+gSmgr = require "app.states.statemanager"
+
+------------------------------------------------------------------------------------------------------------
+-- Require all the states we will use for the game
+
+local Spopup 		= require("app.widgets.popup")
+local Stransition	= require("app.widgets.transition")
+
+local Smaster 		= require("app.states.master")
+
+local Sgamefreeplay	 	= require("app.states.Gfreeplay")
+
+------------------------------------------------------------------------------------------------------------
+---- State data
+
+
+------------------------------------------------------------------------------------------------------------
+-- Register every state with the statemanager.
+
+gSmgr:Init()
+
+gSmgr:CreateState("PopupWin", 		Spopup) 
+gSmgr:CreateState("Transition", 	Stransition) 
+
+gSmgr:CreateState("Master", 		Smaster) 
+
+gSmgr:CreateState("GameFreePlay", 	Sgamefreeplay) 
+
+------------------------------------------------------------------------------------------------------------
+
+function init(self)
+	
+	gSmgr.self = self 
+
+    self.width, self.height = window.get_size()
+	self.scale = self.height / 1136 --self.width / 640.0 
+	self.hwidth = self.width * 0.5
+	self.hheight = self.height * 0.5
+
+	self.clicked = nil 
+	self.swipe = {
+		left 	= false,
+		right 	= false,
+		up 		= false,
+		down 	= false,
+	}
+
+	utils.init(self)
+	imgui.set_ini_filename()
+	Smaster.set_style()
+	utils.loadconfig(self)
+
+	Smaster.self = self
+	Smaster:Begin()
+	gSmgr:ChangeState("Master")
+	
+	self.platform_info = sys.get_sys_info()
+	-- The system OS name: "Darwin", "Linux", "Windows", "HTML5", "Android" or "iPhone OS"
+	if self.platform_info.system_name == "HTML5" then
+		local html_data = [[
+		var html = "<div style='position:absolute;left:0px;top:0px;z-index:-1;'>";
+		html = html + "<input id='hiddenInput' type='text' name='hiddenInput' /></div>";
+		document.getElementById("canvas-container").insertAdjacentHTML("afterend", html);
+	]]
+	html5.run(html_data)
+			
+	local js_data = [[
+		var script = document.createElement("script");
+		var funcscr = "var inputcurr = '';\n";
+		funcscr = funcscr + "var inputdata = {};\n";
+		funcscr = funcscr + "var winsize = [window.width,window.height];\n";
+
+		funcscr = funcscr + "window.addEventListener('resize', windowSizeChanged);\n";
+		funcscr = funcscr + "window.addEventListener('load', function() {\n";
+		funcscr = funcscr + "  winsize = [window.width,window.height];\n";
+		funcscr = funcscr + "})\n";
+
+		funcscr = funcscr + "function windowSizeChanged() {\n";
+		funcscr = funcscr + "  window.resizeTo(winsize[0],winsize[1]);\n";
+		funcscr = funcscr + "}\n";
+		
+		funcscr = funcscr + "const inputtext = document.querySelector('#hiddenInput');\n";
+		funcscr = funcscr + "inputtext.addEventListener('keydown', (e) => {\n";
+		funcscr = funcscr + "  var key = e.key;\n";
+		funcscr = funcscr + "});\n";
+
+		funcscr = funcscr + "function clearFocus(){ \n ";
+		funcscr = funcscr + "  inputcurr = 'none';\n";
+		funcscr = funcscr + "  var canvas = document.getElementById('canvas');\n";
+		funcscr = funcscr + "  canvas.focus();\n";
+		funcscr = funcscr + "}\n";
+		
+		funcscr = funcscr + "function clearInput(id, curr){ \n ";
+		funcscr = funcscr + "  inputdata[id] = '';\n";
+		funcscr = funcscr + "  inputcurr = id;\n";
+		funcscr = funcscr + "  document.getElementById('hiddenInput').value = curr;\n";
+		funcscr = funcscr + "  var input = document.getElementById('hiddenInput');\n";
+		funcscr = funcscr + "  input.focus();\n";
+		funcscr = funcscr + "}\n";
+		
+		funcscr = funcscr + "function getInputText(id){ \n ";
+		funcscr = funcscr + "  var input = document.getElementById('hiddenInput');\n";
+		funcscr = funcscr + "  input.focus();\n";
+		funcscr = funcscr + "  inputdata[id] = input.value;\n";
+		funcscr = funcscr + "  return inputdata[id];\n";
+		funcscr = funcscr + "}\n";
+
+		script.innerHTML = funcscr;
+		document.body.appendChild(script);
+		]]
+
+		html5.run(js_data)
+	end
+end
+
+------------------------------------------------------------------------------------------------------------
+
+function on_message(self, message_id, message, sender)
+
+	if message_id == hash("on_gesture") then
+
+		self.swipe.left = message.swipe_left
+		self.swipe.right = message.swipe_right
+		self.swipe.up = message.swipe_up
+		self.swipe.down = message.swipe_down
+		self.swipe.info = nil 
+
+		if(message.swipe) then 
+			self.swipe.info = {
+				from 	= message.swipe.from,
+				to 		= message.swipe.to,
+				time 	= message.swipe.time,
+			}
+		end		
+	end
+
+	gSmgr:Message( self, message_id, message, sender )
+end
+
+------------------------------------------------------------------------------------------------------------
+
+local function get_text()
+	local js_data = [[
+		function get_text_value(){
+			var value = document.getElementById("foo").value;
+			return value;
+		};
+		get_text_value();
+	]]
+	local text_value = html5.run(js_data)
+	--print value to console
+	-- pprint(text_value) 
+	--set value to a GUI text node (requires gui node setup)
+	--gui.set_text(gui.get_node("text_node"), text_value)
+end
+
+------------------------------------------------------------------------------------------------------------
+
+function on_input(owner, action_id, action)
+
+	gSmgr:Input(owner, action_id, action)
+end
+
+------------------------------------------------------------------------------------------------------------
+
+function on_reload(self)
+
+	self.width, self.height = window.get_size()
+	self.scale = self.height / 1136 --self.width / 640.0 
+	self.hwidth = self.width * 0.5
+	self.hheight = self.height * 0.5
+end
+
+------------------------------------------------------------------------------------------------------------
+
+function update(self, dt)
+
+	-- local buttons 	= gSmgr:GetMouseButtons()
+	-- local move 		= gSmgr:GetMouseMove()
+	-- gSmgr:Update(move.x, move.y, buttons)
+
+	-- Sneaky way to get self and dt to all states
+	gSmgr.dt 	= dt
+	gSmgr:Update()
+	gSmgr:Render()
+end
+
+------------------------------------------------------------------------------------------------------------
+
+function final(self)
+
+	utils.saveconfig(self, reset)
+end 
+
+------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,53 @@
+function init(self)
+	gui.set_text(gui.get_node("collision"), "")
+end
+
+function final(self)
+	-- Add finalization code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function update(self, dt)
+	-- Add update code here
+	-- Learn more: https://defold.com/manuals/script/
+	-- Remove this function if not needed
+end
+
+function on_message(self, message_id, message, sender)
+
+	if(message_id == hash("object")) then 
+		local speed = 1.944 * (message.speed or 0) 
+		gui.set_text(gui.get_node("altitude"), string.format("ALT: %05d", message.altitude or 0))
+		gui.set_text(gui.get_node("speed"), string.format("%03d KTS", speed or 0))
+		gui.set_text(gui.get_node("heading"), string.format("HDG: %03d", message.heading or 0))
+		gui.set_text(gui.get_node("climb"), string.format("CLIMB: %03d", message.climb or 0))
+		if(message.throttle) then gui.set_text(gui.get_node("throttle"), string.format("THR: %03d", message.throttle or 0)) end
+	end
+
+	if(message_id == hash("collision")) then 
+		gui.set_text(gui.get_node("collision"), "COLLISION! PRESS ENTER")
+	end
+
+	if(message_id == hash("init")) then 
+		gui.set_text(gui.get_node("collision"), "")
+	end 
+end
+
+function on_input(self, action_id, action)
+	-- Add input-handling code here. The game object this script is attached to
+	-- must have acquired input focus:
+	--
+	--    msg.post(".", "acquire_input_focus")
+	--
+	-- All mapped input bindings will be received. Mouse and touch input will
+	-- be received regardless of where on the screen it happened.
+	-- Learn more: https://defold.com/manuals/input/
+	-- Remove this function if not needed
+end
+
+function on_reload(self)
+	-- Add reload-handling code here
+	-- Learn more: https://defold.com/manuals/hot-reload/
+	-- Remove this function if not needed
+end

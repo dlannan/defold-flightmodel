@@ -1,0 +1,80 @@
+key_trigger {
+  input: KEY_UP
+  action: "up"
+}
+key_trigger {
+  input: KEY_DOWN
+  action: "down"
+}
+key_trigger {
+  input: KEY_LEFT
+  action: "left"
+}
+key_trigger {
+  input: KEY_RIGHT
+  action: "right"
+}
+key_trigger {
+  input: KEY_R
+  action: "throttleup"
+}
+key_trigger {
+  input: KEY_F
+  action: "throttledown"
+}
+key_trigger {
+  input: KEY_W
+  action: "pitchup"
+}
+key_trigger {
+  input: KEY_S
+  action: "pitchdown"
+}
+key_trigger {
+  input: KEY_A
+  action: "rollleft"
+}
+key_trigger {
+  input: KEY_D
+  action: "rollright"
+}
+key_trigger {
+  input: KEY_SPACE
+  action: "paused"
+}
+key_trigger {
+  input: KEY_1
+  action: "inc_resolution"
+}
+key_trigger {
+  input: KEY_2
+  action: "dec_resolution"
+}
+key_trigger {
+  input: KEY_G
+  action: "gear"
+}
+key_trigger {
+  input: KEY_COMMA
+  action: "rudderleft"
+}
+key_trigger {
+  input: KEY_PERIOD
+  action: "rudderright"
+}
+key_trigger {
+  input: KEY_C
+  action: "camera"
+}
+key_trigger {
+  input: KEY_END
+  action: "debug"
+}
+key_trigger {
+  input: KEY_ENTER
+  action: "enter"
+}
+mouse_trigger {
+  input: MOUSE_BUTTON_1
+  action: "touch"
+}
